@@ -38,19 +38,23 @@ const ExpertPanel: React.FC<ExpertPanelProps> = ({
   const [question, setQuestion] = React.useState('')
   const [isAsking, setIsAsking] = React.useState(false)
   const [qaHistory, setQaHistory] = React.useState<{q: string, a: string}[]>([])
+  const [pendingQuestion, setPendingQuestion] = React.useState('')
 
   const handleAskQuestion = async () => {
     if (!question.trim()) return
+    const q = question
+    setQuestion('')
+    setPendingQuestion(q)
     setIsAsking(true)
     try {
       const { aiService } = await import('../../services/aiService')
-      const answer = await aiService.askExpertQuestion(topic, role, name, rawAnalysis, question)
-      setQaHistory(prev => [...prev, { q: question, a: answer }])
-      setQuestion('')
+      const answer = await aiService.askExpertQuestion(topic, role, name, rawAnalysis, q)
+      setQaHistory(prev => [...prev, { q: q, a: answer }])
     } catch (err) {
       console.error(err)
-      setQaHistory(prev => [...prev, { q: question, a: 'Bir hata oluştu. Lütfen tekrar deneyin.' }])
+      setQaHistory(prev => [...prev, { q: q, a: 'Bir hata oluştu. Lütfen tekrar deneyin.' }])
     }
+    setPendingQuestion('')
     setIsAsking(false)
   }
 
@@ -142,7 +146,7 @@ const ExpertPanel: React.FC<ExpertPanelProps> = ({
                 ) : (
                   <div className={styles.qaContainer}>
                     <div className={styles.qaHistory}>
-                      {qaHistory.length === 0 && (
+                      {qaHistory.length === 0 && !isAsking && (
                         <p className={styles.qaEmptyText}>{t.panel.emptyQ}</p>
                       )}
                       {qaHistory.map((item, idx) => (
@@ -153,7 +157,12 @@ const ExpertPanel: React.FC<ExpertPanelProps> = ({
                           </div>
                         </div>
                       ))}
-                      {isAsking && <div className={styles.aBubble}>{t.panel.thinking}</div>}
+                      {isAsking && (
+                        <div className={styles.qaItem}>
+                          <div className={styles.qBubble}><strong>{t.panel.you}</strong> {pendingQuestion}</div>
+                          <div className={styles.aBubble}>{t.panel.thinking}</div>
+                        </div>
+                      )}
                     </div>
                     <div className={styles.qaInputArea}>
                       <input 
