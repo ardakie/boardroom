@@ -1,0 +1,219 @@
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--space-6) 0; /* Alt ve üst padding tamamen sıfırlandı */
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch; /* İçeriğin tüm dikey alanı kaplamasına izin ver */
+}
+
+.header {
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.centerLogo {
+  height: 260px;
+  margin-top: -70px; 
+  margin-bottom: -110px; /* Geri kalan her şeyi daha yukarı çekmek için alt boşluğu eksi olarak artırdık */
+  object-fit: contain;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  filter: brightness(0);
+}
+
+.centerLogo:hover {
+  transform: scale(1.05);
+}
+
+.thinkingIndicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-text-primary);
+  animation: pulse-glow 2s infinite;
+}
+
+.topicTitle {
+  font-size: var(--text-2xl);
+  font-weight: 300;
+  color: var(--color-text-primary);
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 0; /* Boşluk tamamen sıfır */
+}
+
+.grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(280px, 1fr)); 
+  grid-auto-rows: minmax(0, 1fr); 
+  gap: var(--space-4);
+  position: relative;
+  overflow: hidden; 
+  align-content: stretch; 
+  justify-content: center; 
+  padding-bottom: 0; /* Alt boşluğu sıfırladık */
+}
+
+/* Strategic Grid Placement for an Editorial Layout */
+.cellItem {
+  width: 100%;
+  height: 100%; /* Panele tam yükseklik verir */
+}
+
+.cellFinanceItem {
+  width: 100%;
+  height: 100%;
+  position: relative; /* Important for objection link positioning */
+}
+
+.reportButtonWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: var(--space-4); /* Butonun üstünde güvenli boşluk (overlap'i önler) */
+  padding-bottom: var(--space-6); /* Butonu ekranın alt sınırından yukarı iter */
+  margin-top: 0; 
+  z-index: 50;
+  width: 100%;
+}
+
+.reportButton {
+  background: var(--color-text-primary);
+  color: var(--color-bg-primary);
+  padding: var(--space-4) var(--space-12);
+  border-radius: 30px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.reportButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+}
+
+.modalContent {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: var(--radius-lg);
+}
+
+.closeButton {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-subtle);
+  padding: var(--space-2) var(--space-4);
+  border-radius: 20px;
+  font-size: var(--text-xs);
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: var(--shadow-md);
+}
+
+.closeButton:hover {
+  background: var(--color-border-subtle);
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.reportButtonLoading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.loadingDots {
+  display: inline-flex;
+  gap: 4px;
+}
+.loadingDots span {
+  animation: loadingDots 1.4s infinite ease-in-out both;
+  font-size: 24px;
+  line-height: 10px;
+}
+.loadingDots span:nth-child(1) { animation-delay: -0.32s; }
+.loadingDots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes loadingDots {
+  0%, 80%, 100% { opacity: 0; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-4px); }
+}
+
+.debateWrapper {
+  flex: 1;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  padding-bottom: var(--space-4);
+}
+
+
+.gridContainerWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+

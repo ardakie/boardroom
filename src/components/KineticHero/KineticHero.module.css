@@ -1,0 +1,387 @@
+.heroContainer {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* min-height iptal, tam ekrana sabitle */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Scroll tamamen kapatıldı */
+}
+
+.kineticBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.interactiveGrid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(var(--color-text-tertiary) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-text-tertiary) 1px, transparent 1px);
+  background-size: 40px 40px;
+  z-index: 1;
+  opacity: 1; /* Izgarayı çok daha belirgin hale getirdim */
+}
+
+.cursorSpotlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(250, 250, 250, 0) 70%);
+  border-radius: 50%;
+  mix-blend-mode: overlay;
+  z-index: 2;
+}
+
+.organicForm {
+  width: 50vw;
+  height: 50vw;
+  max-width: 600px;
+  max-height: 600px;
+  background: radial-gradient(circle, var(--color-accent-muted) 0%, rgba(250,250,250,0) 70%);
+  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  animation: fluid-blob 15s ease-in-out infinite alternate;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: blur(80px);
+  opacity: 0.6;
+}
+
+.organicFormSecondary {
+  width: 40vw;
+  height: 40vw;
+  max-width: 500px;
+  max-height: 500px;
+  background: radial-gradient(circle, #EAEAEA 0%, rgba(250,250,250,0) 70%);
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  animation: fluid-blob 18s ease-in-out infinite alternate-reverse;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: multiply;
+  filter: blur(80px);
+  opacity: 0.6;
+}
+
+.contentWrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  width: 100%;
+  padding: 0 var(--space-6);
+  display: flex;
+  justify-content: center;
+}
+
+.stepContainer {
+  width: 100%;
+  max-width: 800px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Tüm yapay kaydırmalar iptal, tam ortalama devrede */
+}
+
+.logoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 48px; /* Subtitle ve prompt ile arasındaki temiz boşluk */
+  width: 100%;
+}
+
+.logoCropWrapper {
+  width: 100%;
+  max-width: 900px; /* Logonun büyüklüğü (İstediğiniz devasa görünüm) */
+  height: 80px; /* SİHİRLİ KISIM: Sadece BOARDROOM yazısının sığacağı kadar yükseklik. Şeffaf boşlukları jilet gibi keser! */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Dışta kalan tüm şeffaf boşlukları yok eder */
+  margin-bottom: 4px; /* POWERED BY yazısını resmen harflerin dibine yapıştırır */
+}
+
+.mainLogo {
+  width: 100%;
+  height: auto;
+  min-height: 400px; /* Resmin orijinal devasa boyutunu korur */
+  object-fit: contain;
+  filter: brightness(0);
+}
+
+.poweredBy {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  opacity: 0.7;
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+  z-index: 10; /* Logonun üzerine çıkabilmesi için */
+}
+
+.poweredBy:hover {
+  opacity: 1;
+}
+
+.poweredText {
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  color: #000000;
+}
+
+.poweredLogo {
+  height: 14px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0); /* Logoyu tamamen siyah yapar */
+}
+
+.subtitle {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  max-width: 550px;
+  margin: 0 auto 24px; /* Subtitle ile prompt kutusu arasındaki boşluk */
+  line-height: 1.5;
+}
+
+.form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+}
+
+.inputField {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-full);
+  padding: var(--space-6) var(--space-16) var(--space-6) var(--space-8);
+  font-size: var(--text-xl);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-base);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+  outline: none;
+}
+
+.inputField::placeholder {
+  color: var(--color-text-tertiary);
+  font-weight: 300;
+}
+
+.inputField:focus {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-lg);
+}
+
+.submitButton {
+  position: absolute;
+  right: var(--space-4);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--color-text-primary);
+  color: var(--color-bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.submitButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.submitButton:not(:disabled):hover {
+  transform: scale(1.05);
+}
+
+.submitButton:not(:disabled):active {
+  transform: scale(0.95);
+}
+
+/* Step 2 Styles */
+.step2Title {
+  font-size: var(--text-3xl);
+  font-weight: 400;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.step2Subtitle {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  max-width: 600px;
+  margin: 0 auto var(--space-12);
+}
+
+.expertGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 700px;
+  margin-bottom: var(--space-12);
+}
+
+.expertToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.expertToggle:hover {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: var(--color-border-strong);
+}
+
+.expertToggleActive {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-text-primary);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.checkboxActive {
+  background-color: var(--color-text-primary);
+  border-color: var(--color-text-primary);
+  color: var(--color-bg-primary);
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.backButton {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.backButton:hover {
+  color: var(--color-text-primary);
+}
+
+.startMeetingButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: var(--color-text-primary);
+  color: var(--color-bg-primary);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  font-size: var(--text-base);
+  font-weight: 500;
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.startMeetingButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.startMeetingButton:not(:disabled):hover {
+  transform: scale(1.02);
+}
+
+.startMeetingButton:not(:disabled):active {
+  transform: scale(0.98);
+}
+.depthGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: var(--space-12);
+}
+
+.depthCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.depthCard:hover {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: var(--color-border-strong);
+  transform: translateY(-2px);
+}
+
+.depthCardActive {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-text-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.depthTitle {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.depthDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .depthGrid {
+    grid-template-columns: 1fr;
+  }
+}

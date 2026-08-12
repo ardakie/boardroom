@@ -1,0 +1,148 @@
+export type Language = 'tr' | 'en';
+
+export const i18n = {
+  tr: {
+    hero: {
+      title: 'Yapay Zeka Destekli Yönetim Kurulu',
+      subtitle: 'Bir fikir, problem veya vizyon girin. Uzman yönetici zihinlerimiz bunu analiz edecek, tartışacak ve bir strateji sentezleyecek.',
+      inputPlaceholder: 'Örn. Lüks kahve pazarı için yeni bir abonelik modeli...',
+      step2Title: 'Kurulu Oluşturun',
+      step2SubtitlePart1: '"',
+      step2SubtitlePart2: '" konusu için hangi uzmanların görüşüne ihtiyacınız var? Gerekmeyenleri çıkarabilirsiniz.',
+      btnBack: 'Geri Dön',
+      btnNext: 'İleri',
+      step3Title: 'Düşünce Detayı',
+      step3Subtitle: 'Yönetim Kurulu ne kadar derinlemesine bir analiz yapsın?',
+      depthLowTitle: 'Hızlı Özet',
+      depthLowDesc: 'Kısa, öz ve ana hatları belirten pratik bir sonuç.',
+      depthMediumTitle: 'Dengeli Analiz',
+      depthMediumDesc: 'Detaylı ama boğucu olmayan, tam kararında bir rapor.',
+      depthHighTitle: 'Kapsamlı Strateji',
+      depthHighDesc: 'Sebepler, mantık ve derinlemesine argümanlarla dolu uzun soluklu bir analiz.',
+      startBtn: 'Toplantıyı Başlat',
+      connecting: 'Yapay Zeka Bağlanıyor...'
+    },
+    expertRoles: {
+      ceo: 'CEO (İcra Kurulu Başkanı)',
+      ceoName: 'Vizyon & Strateji',
+      product: 'Ürün Tasarımcısı',
+      productName: 'Kullanıcı Deneyimi',
+      dev: 'Baş Mühendis',
+      devName: 'Teknik Fizibilite',
+      marketing: 'Pazarlama Yöneticisi',
+      marketingName: 'Konumlandırma',
+      finance: 'Finans Uzmanı',
+      financeName: 'Gelir Modeli',
+      legal: 'Hukuk & Risk Danışmanı',
+      legalName: 'Uyumluluk'
+    },
+    board: {
+      errorTitle: 'Bağlantı Hatası',
+      goBack: 'Geri Dön',
+      analyzing: 'Kurul analiz ediyor...',
+      topic: 'Konu:',
+      reportPreparing: 'RAPOR HAZIRLANIYOR',
+      reportView: 'RAPORU GÖRÜNTÜLE',
+      close: 'Kapat',
+      analyzingPanel: 'Analiz ediliyor...',
+      title: 'Kurul Münakaşası',
+      liveAnalysis: 'Canlı Analiz'
+    },
+    panel: {
+      seeAll: 'Tümünü Gör',
+      askQ: 'Soru Sor',
+      analysisTab: 'Analiz',
+      askTab: 'Soru Sor',
+      emptyQ: 'Bu uzmana kendi alanı ile ilgili sormak istediğiniz spesifik bir soru var mı?',
+      you: 'Siz:',
+      thinking: 'Düşünüyor...',
+      placeholder: 'Sorunuzu yazın...',
+      send: 'Gönder',
+      error: 'Bir hata oluştu. Lütfen tekrar deneyin.'
+    },
+    report: {
+      title: 'Yönetim Kurulu Kararı & Sentez',
+      subtitle: 'Sentez Raporu',
+      downloadBtn: 'İndir',
+      downloadTitle: 'PDF Olarak İndir',
+      depthLow: 'Düşük Detay (Özet)',
+      depthMedium: 'Orta Detay (Dengeli)',
+      depthHigh: 'Yüksek Detay (Kapsamlı)',
+      topicPrefix: 'Değerlendirilen Konu:',
+      ceo: 'Boardroom Sentez Raporu',
+      locale: 'tr-TR'
+    }
+  },
+  en: {
+    hero: {
+      title: 'AI Powered Board of Directors',
+      subtitle: 'Enter an idea, problem, or vision. Our expert executive minds will analyze it, debate, and synthesize a strategy.',
+      inputPlaceholder: 'e.g. A new subscription model for the luxury coffee market...',
+      step2Title: 'Assemble the Board',
+      step2SubtitlePart1: 'Which experts do you need for the topic "',
+      step2SubtitlePart2: '"? You can remove the ones you don\'t need.',
+      btnBack: 'Go Back',
+      btnNext: 'Next',
+      step3Title: 'Thought Depth',
+      step3Subtitle: 'How in-depth should the Board\'s analysis be?',
+      depthLowTitle: 'Quick Summary',
+      depthLowDesc: 'A short, concise, and practical conclusion outlining the main points.',
+      depthMediumTitle: 'Balanced Analysis',
+      depthMediumDesc: 'A detailed but not overwhelming report, perfectly balanced.',
+      depthHighTitle: 'Comprehensive Strategy',
+      depthHighDesc: 'A long-form analysis full of reasoning, logic, and in-depth arguments.',
+      startBtn: 'Start Meeting',
+      connecting: 'AI is Connecting...'
+    },
+    expertRoles: {
+      ceo: 'CEO (Chief Executive Officer)',
+      ceoName: 'Vision & Strategy',
+      product: 'Product Designer',
+      productName: 'User Experience',
+      dev: 'Lead Engineer',
+      devName: 'Technical Feasibility',
+      marketing: 'Marketing Manager',
+      marketingName: 'Positioning',
+      finance: 'Financial Expert',
+      financeName: 'Revenue Model',
+      legal: 'Legal & Risk Advisor',
+      legalName: 'Compliance'
+    },
+    board: {
+      errorTitle: 'Connection Error',
+      goBack: 'Go Back',
+      analyzing: 'The board is analyzing...',
+      topic: 'Topic:',
+      reportPreparing: 'PREPARING REPORT',
+      reportView: 'VIEW REPORT',
+      close: 'Close',
+      analyzingPanel: 'Analyzing...',
+      title: 'Board Debate',
+      liveAnalysis: 'Live Analysis'
+    },
+    panel: {
+      seeAll: 'See All',
+      askQ: 'Ask',
+      analysisTab: 'Analysis',
+      askTab: 'Ask',
+      emptyQ: 'Do you have a specific question for this expert regarding their domain?',
+      you: 'You:',
+      thinking: 'Thinking...',
+      placeholder: 'Type your question...',
+      send: 'Send',
+      error: 'An error occurred. Please try again.'
+    },
+    report: {
+      title: 'Board of Directors Decision & Synthesis',
+      subtitle: 'Synthesis Report',
+      downloadBtn: 'Download',
+      downloadTitle: 'Download as PDF',
+      depthLow: 'Low Detail (Summary)',
+      depthMedium: 'Medium Detail (Balanced)',
+      depthHigh: 'High Detail (Comprehensive)',
+      topicPrefix: 'Evaluated Topic:',
+      ceo: 'Boardroom Synthesis Report',
+      locale: 'en-US'
+    }
+  }
+};
