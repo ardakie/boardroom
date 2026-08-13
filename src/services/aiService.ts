@@ -81,7 +81,7 @@ async function callGemini(prompt: string, expectJson: boolean = false): Promise<
   // 2. Eğer backend yoksa veya hata verdiyse (Örn: npm run dev modundayken), VITE_GEMINI_API_KEY'i kontrol et
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (apiKey && apiKey !== 'your_gemini_api_key_here') {
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const payload: any = {
       contents: [{ parts: [{ text: prompt }] }],
