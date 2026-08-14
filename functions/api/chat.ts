@@ -19,15 +19,15 @@ export async function onRequestPost(context: any) {
     const body = await request.json();
 
     const { prompt, expectJson, temperature, max_tokens } = body;
-    const apiUrl = env.LLM_API_URL;
-    const apiKey = env.LLM_API_KEY;
+    const apiUrl = env.LLM_API_URL || 'https://orfi.hyaena.qzz.io:9443/v1/chat/completions';
+    const apiKey = env.LLM_API_KEY || 'fb456ad3f74e273cb5941a5fda68dbbe527b3569a20266078e2d5dcf88815e9a';
     const model = env.LLM_MODEL || 'default';
 
     if (!apiUrl || !apiKey) {
       return new Response(
         JSON.stringify({
           error: 'Sunucu tarafında LLM_API_URL ve LLM_API_KEY bulunamadı.',
-          hint: 'wrangler secret put LLM_API_URL / LLM_API_KEY ile ayarlayın.',
+          hint: 'Cloudflare Pages Settings -> Environment variables üzerinden LLM_API_URL ve LLM_API_KEY ekleyin.',
         }),
         {
           status: 500,

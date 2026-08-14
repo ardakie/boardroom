@@ -58,10 +58,12 @@ async function safeGenerateJson<T>(prompt: string, retries: number = 2): Promise
   throw new Error('Beklenmeyen hata');
 }
 
-// Yardımcı fonksiyon: Hem Cloudflare Backend hem de doğrudan API anahtarı ile
+// Yardımcı fonksiyon: Hem Cloudflare Backend hem de yerel dev proxy / doğrudan API anahtarı ile
 // çalışabilen OpenAI-uyumlu (chat.completions) LLM çağırıcı
 async function callLLM(prompt: string, expectJson: boolean = false): Promise<string> {
-  // 1. Önce Cloudflare Backend (/api/chat) üzerinden dene
+  let backendError: string | null = null;
+
+  // 1. Önce Backend / Local Dev Proxy (/api/chat) üzerinden dene
   try {
     const response = await fetch('/api/chat', {
       method: 'POST',
@@ -71,18 +73,29 @@ async function callLLM(prompt: string, expectJson: boolean = false): Promise<str
 
     if (response.ok) {
       const data = await response.json();
-      if (data && data.result) {
+      if (data && typeof data.result === 'string') {
         return data.result;
       }
+    } else {
+      try {
+        const errorData = await response.json();
+        backendError = errorData?.error || errorData?.message || `HTTP ${response.status}`;
+      } catch {
+        backendError = `HTTP ${response.status}`;
+      }
     }
-  } catch (err) {
+  } catch (err: any) {
+    backendError = err?.message || 'Ağ hatası';
     console.warn("Backend API (/api/chat) çağrılamadı, yerel anahtar deneniyor...", err);
   }
 
-  // 2. Eğer backend yoksa veya hata verdiyse (Örn: npm run dev modundayken),
-  //    VITE_LLM_API_URL / VITE_LLM_API_KEY / VITE_LLM_MODEL'i kontrol et
-  const apiUrl = import.meta.env.VITE_LLM_API_URL;
-  const apiKey = import.meta.env.VITE_LLM_API_KEY;
+  // 2. Eğer backend yoksa veya hata verdiyse doğrudan çağrı dene
+  const apiUrl =
+    import.meta.env.VITE_LLM_API_URL ||
+    'https://orfi.hyaena.qzz.io:9443/v1/chat/completions';
+  const apiKey =
+    import.meta.env.VITE_LLM_API_KEY ||
+    'fb456ad3f74e273cb5941a5fda68dbbe527b3569a20266078e2d5dcf88815e9a';
   const model = import.meta.env.VITE_LLM_MODEL || 'default';
 
   if (apiUrl && apiKey && apiKey !== 'your_llm_api_key_here') {
@@ -133,7 +146,7 @@ async function callLLM(prompt: string, expectJson: boolean = false): Promise<str
     return data?.choices?.[0]?.message?.content || '';
   }
 
-  throw new Error("API çağrısı başarısız oldu. Lütfen Cloudflare servisinin çalıştığından veya geçerli bir API anahtarınız olduğundan emin olun.");
+  throw new Error(backendError ? `API çağrısı başarısız oldu: ${backendError}` : "API çağrısı başarısız oldu. Lütfen Cloudflare servisinin çalıştığından veya geçerli bir API anahtarınız olduğundan emin olun.");
 }
 
 export const aiService = {
