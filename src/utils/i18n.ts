@@ -46,7 +46,9 @@ export const i18n = {
       close: 'Kapat',
       analyzingPanel: 'Analiz ediliyor...',
       title: 'Kurul Münakaşası',
-      liveAnalysis: 'Canlı Analiz'
+      liveAnalysis: 'Canlı Analiz',
+      aiErrorPrefix: 'Yapay zeka hatası:',
+      debatePreparing: 'Asistanlar toplantı için hazırlanıyor...'
     },
     panel: {
       seeAll: 'Tümünü Gör',
@@ -118,7 +120,9 @@ export const i18n = {
       close: 'Close',
       analyzingPanel: 'Analyzing...',
       title: 'Board Debate',
-      liveAnalysis: 'Live Analysis'
+      liveAnalysis: 'Live Analysis',
+      aiErrorPrefix: 'AI error:',
+      debatePreparing: 'The experts are preparing for the meeting...'
     },
     panel: {
       seeAll: 'See All',

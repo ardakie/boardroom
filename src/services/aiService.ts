@@ -9,7 +9,7 @@ export interface ExpertPanelContent {
   paragraphs: string[];
 }
 
-// API Key'i ve URL'i fonksiyon içinde dinamik alacağız
+// API Key ve URL'i fonksiyon içinde dinamik alacağız
 
 // Helper: Markdown'ı temizle
 function cleanJsonResponse(text: string): string {
@@ -22,30 +22,30 @@ function cleanJsonResponse(text: string): string {
   if (cleaned.endsWith('```')) {
     cleaned = cleaned.substring(0, cleaned.length - 3);
   }
-  
+
   cleaned = cleaned.trim();
-  
+
   // Sadece array kısmını al (başındaki ve sonundaki fazlalıkları at)
   const firstBracket = cleaned.indexOf('[');
   const lastBracket = cleaned.lastIndexOf(']');
   if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
     cleaned = cleaned.substring(firstBracket, lastBracket + 1);
   }
-  
+
   // Olası JSON hatalarını manuel düzeltmeye çalış (eksik virgül veya fazla virgül)
   cleaned = cleaned.replace(/}\s*{/g, '},{');
   cleaned = cleaned.replace(/]\s*{/g, '],{');
   cleaned = cleaned.replace(/}\s*]/g, '}]');
   cleaned = cleaned.replace(/,\s*]/g, ']');
   cleaned = cleaned.replace(/,\s*}/g, '}');
-  
+
   return cleaned;
 }
 
 async function safeGenerateJson<T>(prompt: string, retries: number = 2): Promise<T> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const result = await callGemini(prompt, true);
+      const result = await callLLM(prompt, true);
       const cleanedResult = cleanJsonResponse(result);
       return JSON.parse(cleanedResult) as T;
     } catch (err: any) {
@@ -58,11 +58,12 @@ async function safeGenerateJson<T>(prompt: string, retries: number = 2): Promise
   throw new Error('Beklenmeyen hata');
 }
 
-// Yardımcı fonksiyon: Hem Cloudflare API hem de doğrudan API anahtarı ile çalışabilen akıllı Gemini çağırıcı
-async function callGemini(prompt: string, expectJson: boolean = false): Promise<string> {
-  // 1. Önce Cloudflare Backend (/api/gemini) üzerinden dene
+// Yardımcı fonksiyon: Hem Cloudflare Backend hem de doğrudan API anahtarı ile
+// çalışabilen OpenAI-uyumlu (chat.completions) LLM çağırıcı
+async function callLLM(prompt: string, expectJson: boolean = false): Promise<string> {
+  // 1. Önce Cloudflare Backend (/api/chat) üzerinden dene
   try {
-    const response = await fetch('/api/gemini', {
+    const response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, expectJson, temperature: expectJson ? 0.8 : 0.7 })
@@ -75,37 +76,61 @@ async function callGemini(prompt: string, expectJson: boolean = false): Promise<
       }
     }
   } catch (err) {
-    console.warn("Backend API (/api/gemini) çağrılamadı, yerel anahtar deneniyor...", err);
+    console.warn("Backend API (/api/chat) çağrılamadı, yerel anahtar deneniyor...", err);
   }
 
-  // 2. Eğer backend yoksa veya hata verdiyse (Örn: npm run dev modundayken), VITE_GEMINI_API_KEY'i kontrol et
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (apiKey && apiKey !== 'your_gemini_api_key_here') {
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  // 2. Eğer backend yoksa veya hata verdiyse (Örn: npm run dev modundayken),
+  //    VITE_LLM_API_URL / VITE_LLM_API_KEY / VITE_LLM_MODEL'i kontrol et
+  const apiUrl = import.meta.env.VITE_LLM_API_URL;
+  const apiKey = import.meta.env.VITE_LLM_API_KEY;
+  const model = import.meta.env.VITE_LLM_MODEL || 'default';
 
+  if (apiUrl && apiKey && apiKey !== 'your_llm_api_key_here') {
     const payload: any = {
-      contents: [{ parts: [{ text: prompt }] }],
+      model,
+      messages: [{ role: 'user', content: prompt }],
     };
 
     if (expectJson) {
-      payload.generationConfig = { responseMimeType: 'application/json', temperature: 0.8 };
-    } else {
-      payload.generationConfig = { temperature: 0.7 };
+      payload.response_format = { type: 'json_object' };
     }
+    payload.temperature = expectJson ? 0.8 : 0.7;
 
-    const response = await fetch(apiUrl, {
+    let response = await fetch(apiUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
       body: JSON.stringify(payload)
     });
 
+    // Bazı OpenAI-uyumlu proxy'ler response_format desteklemez (400 döner).
+    // Bu durumda response_format olmadan tekrar dene.
+    if (expectJson && response.status === 400) {
+      delete payload.response_format;
+      response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(payload)
+      });
+    }
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || 'Gemini API Hatası');
+      let errorData: any = {};
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { message: await response.text() };
+      }
+      throw new Error(errorData.error?.message || errorData.message || 'LLM API Hatası');
     }
 
     const data = await response.json();
-    return data.candidates[0].content.parts[0].text;
+    return data?.choices?.[0]?.message?.content || '';
   }
 
   throw new Error("API çağrısı başarısız oldu. Lütfen Cloudflare servisinin çalıştığından veya geçerli bir API anahtarınız olduğundan emin olun.");
@@ -115,8 +140,8 @@ export const aiService = {
   // 1. Tartışma (Debate) Metinlerini Üret
   async generateDebate(topic: string, experts: string[], initialAnalyses: ExpertPanelContent[], language: 'tr' | 'en' = 'tr'): Promise<DebateMessage[]> {
     const contextStr = initialAnalyses.map(a => `${a.expertId} ilk düşüncesi: "${a.paragraphs.join(' ')}"`).join('\n');
-    
-    const prompt = `Sen bir simülasyon sistemisin. Konu: "${topic}". 
+
+    const prompt = `Sen bir simülasyon sistemisin. Konu: "${topic}".
 Masadaki uzmanlar: ${experts.join(', ')}.
 Uzmanların ilk başta yaptıkları yorumlar şunlar (BUNLARI ASLA TEKRAR ETME):
 ${contextStr}
@@ -139,22 +164,23 @@ Lütfen cevabını sadece ve SADECE bir JSON dizisi formatında ver. Başka hiç
 Sadece listedeki uzmanların ID'lerini kullan (${experts.join(', ')}).`;
 
     const parsed = await safeGenerateJson<any[]>(prompt);
-    
+    const parsedArray = Array.isArray(parsed) ? parsed : (parsed && typeof parsed === 'object' ? [parsed] : []);
+
     // Her uzmanın sadece BİR KERE konuşmasını programatik olarak da garanti altına alalım
     const uniqueMessages = [];
     const seenExperts = new Set();
-    for (const msg of parsed) {
-      if (!seenExperts.has(msg.expertId) && experts.includes(msg.expertId)) {
+    for (const msg of parsedArray) {
+      if (msg && msg.expertId && !seenExperts.has(msg.expertId) && experts.includes(msg.expertId)) {
         seenExperts.add(msg.expertId);
         uniqueMessages.push(msg);
       }
     }
-    
+
     return uniqueMessages.map((msg: any) => {
       // Mesaj uzunluğuna göre dinamik bekleme süresi hesapla (daha hızlı)
       const textLength = msg.text ? msg.text.length : 50;
-      const calculatedDelay = Math.max(1000, Math.min(2500, textLength * 20)); 
-      
+      const calculatedDelay = Math.max(1000, Math.min(2500, textLength * 20));
+
       return {
         ...msg,
         delay: calculatedDelay + Math.floor(Math.random() * 500)
@@ -178,7 +204,50 @@ Lütfen cevabını sadece ve SADECE bir JSON dizisi formatında ver. Başka hiç
   { "expertId": "ceo", "paragraphs": ["${language === 'tr' ? 'İlk paragraf...' : 'First paragraph...'}", "${language === 'tr' ? 'İkinci paragraf...' : 'Second paragraph...'}"] }
 ]`;
 
-    return await safeGenerateJson<ExpertPanelContent[]>(prompt);
+    // Model bazen (özellikle çok uzman seçilince) bazı uzmanları atlayabilir.
+    // Tüm seçili uzmanların analizinin olduğundan emin ol; eksikleri tek tek tamamla.
+    const parsed = await safeGenerateJson<ExpertPanelContent[]>(prompt);
+    const parsedArray = Array.isArray(parsed) ? parsed : (parsed && typeof parsed === 'object' ? [parsed] : []);
+    const analyses: ExpertPanelContent[] = [];
+    const foundIds = new Set<string>();
+
+    for (const item of parsedArray) {
+      if (item && item.expertId && experts.includes(item.expertId) && !foundIds.has(item.expertId)) {
+        foundIds.add(item.expertId);
+        analyses.push(item);
+      }
+    }
+
+    for (const expertId of experts) {
+      if (foundIds.has(expertId)) continue;
+      // Eksik uzman için tek başına analiz üret
+      try {
+        const single = await safeGenerateJson<any>(
+          `Sen bir yönetim kurulu simülasyonusun. Konu: "${topic}".
+Sadece "${expertId}" uzmanı için konuyla ilgili çok spesifik, akıllıca ve profesyonel 2 adet kısa paragraf (görüş) oluştur. Görüşleri kendi perspektifinden yaz.
+Lütfen cevabını sadece ve SADECE bir JSON dizisi formatında ver. Başka hiçbir açıklama yazma.
+ÖNEMLİ KURALLAR:
+1. Her JSON objesinin arasında mutlaka virgül olmalıdır.
+2. Paragraf metinleri içinde çift tırnak (") KESİNLİKLE kullanma, gerekirse tek tırnak (') kullan.
+3. Çıktı formatı kesinlikle bozuk olmamalı, kusursuz bir JSON olmalı.
+4. LÜTFEN BÜTÜN YANITLARINI KESİNLİKLE ${language === 'tr' ? 'TÜRKÇE' : 'İNGİLİZCE'} DİLİNDE YAZ.
+Örnek format:
+[
+  { "expertId": "${expertId}", "paragraphs": ["${language === 'tr' ? 'İlk paragraf...' : 'First paragraph...'}", "${language === 'tr' ? 'İkinci paragraf...' : 'Second paragraph...'}"] }
+]`
+        );
+        const singleList = Array.isArray(single) ? single : (single && typeof single === 'object' ? [single] : []);
+        const singleItem = singleList.find((s: any) => s?.expertId === expertId);
+        if (singleItem) {
+          foundIds.add(expertId);
+          analyses.push(singleItem);
+        }
+      } catch (err: any) {
+        console.warn(`Eksik uzman analizi üretilemedi (${expertId}):`, err.message);
+      }
+    }
+
+    return analyses;
   },
 
   // 3. Nihai Sentez Raporunu Üret
@@ -191,20 +260,20 @@ Lütfen cevabını sadece ve SADECE bir JSON dizisi formatında ver. Başka hiç
 
     const analysesText = expertAnalyses.map(e => `${e.expertId}: ${e.paragraphs.join(' ')}`).join('\n');
 
-    const prompt = `Sen bir "Yönetim Kurulu Sentez Yapay Zekası"sın. 
-Konu: "${topic}". 
+    const prompt = `Sen bir "Yönetim Kurulu Sentez Yapay Zekası"sın.
+Konu: "${topic}".
 Katılımcı Uzmanlar: ${experts.join(', ')}.
 Uzmanların Gönderdiği Analizler:
 ${analysesText}
 
-Görev: Bu analizleri sentezleyerek resmi bir "Yönetim Kurulu Kararı ve Sentez Raporu" yaz. 
+Görev: Bu analizleri sentezleyerek resmi bir "Yönetim Kurulu Kararı ve Sentez Raporu" yaz.
 Detay seviyesi: ${depthInstruction[depth]}
 
 Raporu lütfen Markdown formatında yaz. Başlıklar, madde işaretleri, kalın metinler vb. kullanarak şık bir rapor oluştur.
 Lütfen raporun sonuna tarafsız ve net bir "Sonuç ve Öneriler" bölümü ekle. KESİNLİKLE "ONAYLANDI", "REDDEDİLDİ" veya "REVİZYON GEREKLİ" gibi karar ifadeleri KULLANMA.
 ÇOK ÖNEMLİ: RAPORUN TAMAMINI KESİNLİKLE ${language === 'tr' ? 'TÜRKÇE' : 'İNGİLİZCE'} OLARAK YAZ.`;
 
-    const result = await callGemini(prompt, false);
+    const result = await callLLM(prompt, false);
     return result;
   },
 
@@ -222,7 +291,7 @@ Kullanıcı sana kendi alanınla ve analizinle ilgili şu soruyu soruyor:
 Görev: Bu soruya sadece kendi uzmanlık perspektifinden, profesyonel, doğrudan ve akıllıca bir cevap ver. Cevabını Markdown formatında (bold, liste vb. kullanarak) verebilirsin. Asla JSON formatı kullanma, normal metin olarak yanıtla.
 ÇOK ÖNEMLİ: CEVABINI KESİNLİKLE ${language === 'tr' ? 'TÜRKÇE' : 'İNGİLİZCE'} OLARAK YAZ.`;
 
-    const result = await callGemini(prompt, false);
+    const result = await callLLM(prompt, false);
     return result;
   }
 };

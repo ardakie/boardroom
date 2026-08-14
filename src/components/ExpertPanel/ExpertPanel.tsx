@@ -41,18 +41,18 @@ const ExpertPanel: React.FC<ExpertPanelProps> = ({
   const [pendingQuestion, setPendingQuestion] = React.useState('')
 
   const handleAskQuestion = async () => {
-    if (!question.trim()) return
+    if (!question.trim() || isAsking) return
     const q = question
     setQuestion('')
     setPendingQuestion(q)
     setIsAsking(true)
     try {
       const { aiService } = await import('../../services/aiService')
-      const answer = await aiService.askExpertQuestion(topic, role, name, rawAnalysis, q)
+      const answer = await aiService.askExpertQuestion(topic, role, name, rawAnalysis, q, language)
       setQaHistory(prev => [...prev, { q: q, a: answer }])
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
-      setQaHistory(prev => [...prev, { q: q, a: 'Bir hata oluştu. Lütfen tekrar deneyin.' }])
+      setQaHistory(prev => [...prev, { q: q, a: `${t.panel.error}${err?.message ? `\n\n\`${err.message}\`` : ''}` }])
     }
     setPendingQuestion('')
     setIsAsking(false)

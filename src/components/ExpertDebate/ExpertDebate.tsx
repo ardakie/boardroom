@@ -14,17 +14,18 @@ interface ExpertDebateProps {
   language: Language
 }
 
-const EXPERT_META: Record<string, { name: string; icon: React.ElementType }> = {
-  ceo: { name: 'CEO', icon: Briefcase },
-  product: { name: 'Ürün Tasarımcısı', icon: PenTool },
-  dev: { name: 'Baş Mühendis', icon: Code },
-  marketing: { name: 'Pazarlama', icon: Megaphone },
-  finance: { name: 'Finans', icon: TrendingUp },
-  legal: { name: 'Hukuk', icon: ShieldAlert }
+const EXPERT_ICONS: Record<string, React.ElementType> = {
+  ceo: Briefcase,
+  product: PenTool,
+  dev: Code,
+  marketing: Megaphone,
+  finance: TrendingUp,
+  legal: ShieldAlert
 }
 
 const ExpertDebate: React.FC<ExpertDebateProps> = ({ topic, selectedExperts, aiMessages, onComplete, language }) => {
   const t = i18n[language]
+  const expertNames = t.expertRoles as Record<string, string>
   const [messages, setMessages] = useState<{ id: number; role: string; text: string }[]>([])
   const [isTyping, setIsTyping] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -38,6 +39,11 @@ const ExpertDebate: React.FC<ExpertDebateProps> = ({ topic, selectedExperts, aiM
     let currentIndex = 0
     let messageId = 0
     let isActive = true
+    const timers: ReturnType<typeof setTimeout>[] = []
+
+    const schedule = (fn: () => void, ms: number) => {
+      timers.push(setTimeout(() => { if (isActive) fn() }, ms))
+    }
 
     const playNextMessage = () => {
       if (!isActive) return
@@ -51,27 +57,22 @@ const ExpertDebate: React.FC<ExpertDebateProps> = ({ topic, selectedExperts, aiM
       setIsTyping(currentLine.expertId)
 
       // Typing effect süresi
-      setTimeout(() => {
-        if (!isActive) return
+      schedule(() => {
         setMessages(prev => [...prev, { id: messageId++, role: currentLine.expertId, text: currentLine.text }])
         setIsTyping(null)
         currentIndex++
-        
+
         // Bir sonraki mesaja geçmeden önceki bekleme
-        if (currentIndex < aiMessages.length) {
-          setTimeout(playNextMessage, currentLine.delay)
-        } else {
-          // Son mesaja gelindiyse tamamla
-          playNextMessage()
-        }
+        schedule(playNextMessage, currentLine.delay)
       }, 800) // Her mesajın yazılması için sabit bir simülasyon süresi
     }
 
     // İlk mesajı biraz gecikmeli başlat
-    setTimeout(playNextMessage, 500)
+    schedule(playNextMessage, 500)
 
     return () => {
       isActive = false
+      timers.forEach(clearTimeout)
     }
   }, [aiMessages, onComplete, selectedExperts])
 
@@ -85,7 +86,7 @@ const ExpertDebate: React.FC<ExpertDebateProps> = ({ topic, selectedExperts, aiM
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.spinner}></div>
-        <p className={styles.loadingText}>Asistanlar toplantı için hazırlanıyor...</p>
+        <p className={styles.loadingText}>{t.board.debatePreparing}</p>
       </div>
     )
   }
@@ -106,7 +107,7 @@ const ExpertDebate: React.FC<ExpertDebateProps> = ({ topic, selectedExperts, aiM
       <div className={styles.chatArea} ref={containerRef}>
         <AnimatePresence initial={false}>
           {messages.map((msg) => {
-            const Icon = EXPERT_META[msg.role]?.icon || Briefcase
+            const Icon = EXPERT_ICONS[msg.role] || Briefcase
             return (
               <motion.div
                 key={msg.id}
@@ -118,7 +119,7 @@ const ExpertDebate: React.FC<ExpertDebateProps> = ({ topic, selectedExperts, aiM
                   <Icon size={16} />
                 </div>
                 <div className={styles.messageContent}>
-                  <div className={styles.messageName}>{EXPERT_META[msg.role]?.name}</div>
+                  <div className={styles.messageName}>{expertNames[msg.role] || msg.role}</div>
                   <div className={styles.messageBubble}>{msg.text}</div>
                 </div>
               </motion.div>
@@ -133,7 +134,7 @@ const ExpertDebate: React.FC<ExpertDebateProps> = ({ topic, selectedExperts, aiM
             className={styles.typingIndicatorRow}
           >
             <div className={styles.avatar}>
-              {React.createElement(EXPERT_META[isTyping]?.icon || Briefcase, { size: 16 })}
+              {React.createElement(EXPERT_ICONS[isTyping] || Briefcase, { size: 16 })}
             </div>
             <div className={styles.typingBubble}>
               <span>.</span><span>.</span><span>.</span>

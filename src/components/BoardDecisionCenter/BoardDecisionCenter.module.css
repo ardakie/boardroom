@@ -3,8 +3,9 @@
   margin: 0 auto;
   padding: 0 var(--space-6) 0; /* Alt ve üst padding tamamen sıfırlandı */
   width: 100%;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh; /* İçerik uzunsa sayfa scroll edebilir */
+  height: auto;
+  overflow-y: auto; /* İçerik viewport'u aşınca dikey scroll */
   display: flex;
   flex-direction: column;
   justify-content: stretch; /* İçeriğin tüm dikey alanı kaplamasına izin ver */
@@ -66,13 +67,13 @@
 .grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(3, minmax(280px, 1fr)); 
-  grid-auto-rows: minmax(0, 1fr); 
+  grid-template-columns: repeat(3, minmax(280px, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
   gap: var(--space-4);
   position: relative;
-  overflow: hidden; 
-  align-content: stretch; 
-  justify-content: center; 
+  overflow: visible; /* İçerik taşarsa container scroll etsin */
+  align-content: stretch;
+  justify-content: center;
   padding-bottom: 0; /* Alt boşluğu sıfırladık */
 }
 
